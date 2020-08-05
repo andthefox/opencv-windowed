@@ -3,7 +3,6 @@
 
 import cv2
 from mtcnn import MTCNN
-import numpy as np
 
 detector = MTCNN()
 
@@ -20,23 +19,24 @@ else:
 while rval:
     rval, image = vc.read()
 
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    result = detector.detect_faces(image)
+    image0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    result = detector.detect_faces(image0)
 
-    bounding_box = result[0]['box']
-    keypoints = result[0]['keypoints']
+    for k in result:
+        bounding_box = k['box']
+        keypoints = k['keypoints']
 
-    cv2.rectangle(image,
-                  (bounding_box[0], bounding_box[1]),
-                  (bounding_box[0] + bounding_box[2], bounding_box[1] + bounding_box[3]),
-                  (0, 155, 255),
-                  2)
+        cv2.rectangle(image,
+                      (bounding_box[0], bounding_box[1]),
+                      (bounding_box[0] + bounding_box[2], bounding_box[1] + bounding_box[3]),
+                      (0, 155, 255),
+                      2)
 
-    cv2.circle(image, (keypoints['left_eye']), 2, (0, 155, 255), 2)
-    cv2.circle(image, (keypoints['right_eye']), 2, (0, 155, 255), 2)
-    cv2.circle(image, (keypoints['nose']), 2, (0, 155, 255), 2)
-    cv2.circle(image, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
-    cv2.circle(image, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
+        cv2.circle(image, (keypoints['left_eye']), 2, (0, 155, 255), 2)
+        cv2.circle(image, (keypoints['right_eye']), 2, (0, 155, 255), 2)
+        cv2.circle(image, (keypoints['nose']), 2, (0, 155, 255), 2)
+        cv2.circle(image, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
+        cv2.circle(image, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
 
     # cv2.putText(image, f'Total faces: {str(total)}', (0, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
     cv2.imshow("Face recognition", image)
