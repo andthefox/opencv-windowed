@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import cv2
+from mtcnn import MTCNN
 import numpy as np
 
-face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_alt2.xml")
-profile_cascade = cv2.CascadeClassifier("haarcascade_profileface.xml")
-
-ds_factor = 0.6
+detector = MTCNN()
 
 cv2.namedWindow("Face recognition", cv2.WINDOW_AUTOSIZE)
 vc = cv2.VideoCapture(0)
@@ -22,50 +20,25 @@ else:
 while rval:
     rval, image = vc.read()
 
-    image = cv2.resize(image, None, fx=ds_factor, fy=ds_factor, interpolation=cv2.INTER_AREA)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    face_rects = face_cascade.detectMultiScale(gray, 1.3, 5)
-    profile_rects = profile_cascade.detectMultiScale(gray, 1.3, 5)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    result = detector.detect_faces(image)
 
-    flipped = cv2.flip(gray, 1)
-    profile_rects2 = profile_cascade.detectMultiScale(flipped, 1.3, 5)
-    height, width = flipped.shape
-    for key in profile_rects2:
-        key[0] = width - key[0]
-        key[2] = -key[2]
+    bounding_box = result[0]['box']
+    keypoints = result[0]['keypoints']
 
-    arr = np.empty((0, 4), int)
-    for key in face_rects:
-        arr = np.append(arr, face_rects, axis=0)
-        break
-    for key in profile_rects:
-        arr = np.append(arr, profile_rects, axis=0)
-        break
-    for key in profile_rects2:
-        arr = np.append(arr, profile_rects2, axis=0)
-        break
+    cv2.rectangle(image,
+                  (bounding_box[0], bounding_box[1]),
+                  (bounding_box[0] + bounding_box[2], bounding_box[1] + bounding_box[3]),
+                  (0, 155, 255),
+                  2)
 
-    combined_list = arr.tolist()
-    #print(combined_list)
+    cv2.circle(image, (keypoints['left_eye']), 2, (0, 155, 255), 2)
+    cv2.circle(image, (keypoints['right_eye']), 2, (0, 155, 255), 2)
+    cv2.circle(image, (keypoints['nose']), 2, (0, 155, 255), 2)
+    cv2.circle(image, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
+    cv2.circle(image, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
 
-    result = cv2.groupRectangles(combined_list, 1, 5)
-    itr = 1
-    if len(result[0]) != 0:
-        for (x, y, w, h) in result[0]:
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(image, f'Face {str(itr)}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
-            itr = itr + 1
-        total = len(result[0])
-    else:
-        result = arr
-        for (x, y, w, h) in result:
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(image, f'Face {str(itr)}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
-            itr = itr + 1
-        total = len(result)
-    # print (result)
-
-    cv2.putText(image, f'Total faces: {str(total)}', (0, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
+    # cv2.putText(image, f'Total faces: {str(total)}', (0, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
     cv2.imshow("Face recognition", image)
 
     key = cv2.waitKey(20)
