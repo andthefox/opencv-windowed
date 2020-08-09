@@ -17,10 +17,10 @@ else:
     rval = False
 
 while rval:
-    rval, image = vc.read()
+    rval, frame = vc.read()
 
-    image0 = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    result = detector.detect_faces(image0)
+    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    result = detector.detect_faces(image)
 
     for k in result:
         bounding_box = k['box']
@@ -34,9 +34,9 @@ while rval:
 
         cv2.circle(image, (keypoints['left_eye']), 2, (0, 155, 255), 2)
         cv2.circle(image, (keypoints['right_eye']), 2, (0, 155, 255), 2)
-        cv2.circle(image, (keypoints['nose']), 2, (0, 155, 255), 2)
-        cv2.circle(image, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
-        cv2.circle(image, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
+        # cv2.circle(image, (keypoints['nose']), 2, (0, 155, 255), 2)
+        # cv2.circle(image, (keypoints['mouth_left']), 2, (0, 155, 255), 2)
+        # cv2.circle(image, (keypoints['mouth_right']), 2, (0, 155, 255), 2)
 
     # cv2.putText(image, f'Total faces: {str(total)}', (0, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
     cv2.imshow("Face recognition", image)
